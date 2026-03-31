@@ -5,24 +5,24 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pitstop — 429 Classifier</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
     *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
     :root {
-      --bg: #0a0c0f;
-      --bg2: #111318;
-      --bg3: #1a1d24;
-      --border: #21262d;
-      --text: #cdd9e5;
+      --bg:       #0a0c0f;
+      --bg2:      #111318;
+      --bg3:      #1a1d24;
+      --border:   #21262d;
+      --text:     #cdd9e5;
       --text-dim: #768390;
-      --text-bright: #f0f6fc;
-      --wait: #3fb950;
-      --cap: #e3b341;
-      --stop: #f85149;
-      --accent: #58a6ff;
-      --mono: 'IBM Plex Mono', monospace;
-      --sans: 'IBM Plex Sans', sans-serif;
+      --bright:   #f0f6fc;
+      --wait:     #3fb950;
+      --cap:      #e3b341;
+      --stop:     #f85149;
+      --accent:   #58a6ff;
+      --mono:     'IBM Plex Mono', monospace;
+      --sans:     'IBM Plex Sans', sans-serif;
     }
 
     html { scroll-behavior: smooth; }
@@ -32,27 +32,26 @@
       color: var(--text);
       font-family: var(--sans);
       font-weight: 300;
+      font-size: 17px;
       line-height: 1.7;
       min-height: 100vh;
       padding: 0 1.5rem;
     }
 
     .container {
-      max-width: 680px;
+      max-width: 700px;
       margin: 0 auto;
       padding: 5rem 0 6rem;
     }
 
     /* ── HERO ── */
-    .hero {
-      margin-bottom: 4rem;
-    }
+    .hero { margin-bottom: 4rem; }
 
     .label {
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       font-weight: 500;
-      letter-spacing: 0.12em;
+      letter-spacing: 0.14em;
       text-transform: uppercase;
       color: var(--accent);
       margin-bottom: 1.5rem;
@@ -61,28 +60,32 @@
 
     h1 {
       font-family: var(--sans);
-      font-size: clamp(1.6rem, 4vw, 2.2rem);
+      font-size: clamp(1.75rem, 4.5vw, 2.4rem);
       font-weight: 500;
-      color: var(--text-bright);
-      line-height: 1.3;
-      margin-bottom: 0.75rem;
+      color: var(--bright);
+      line-height: 1.25;
+      margin-bottom: 0.6rem;
       letter-spacing: -0.02em;
     }
 
-    h1 span {
+    h1 em {
       color: var(--stop);
+      font-style: normal;
     }
 
     .subhead {
-      font-size: 1rem;
-      color: var(--text-dim);
-      margin-bottom: 2rem;
+      font-size: 1.1rem;
+      color: var(--text);
+      margin-bottom: 0.75rem;
       line-height: 1.6;
+      font-weight: 300;
     }
 
-    .subhead strong {
-      color: var(--text);
-      font-weight: 400;
+    .audience {
+      font-size: 0.92rem;
+      color: var(--text-dim);
+      margin-bottom: 2rem;
+      font-style: italic;
     }
 
     .cta-group {
@@ -97,31 +100,26 @@
       background: var(--accent);
       color: #0a0c0f;
       font-family: var(--mono);
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       font-weight: 600;
-      padding: 0.6rem 1.25rem;
+      padding: 0.65rem 1.4rem;
       border-radius: 4px;
       text-decoration: none;
       letter-spacing: 0.03em;
       transition: opacity 0.15s;
     }
-
     .btn:hover { opacity: 0.85; }
 
-    .link-subtle {
+    .cta-secondary {
       font-family: var(--mono);
-      font-size: 0.78rem;
+      font-size: 0.8rem;
       color: var(--text-dim);
       text-decoration: none;
       border-bottom: 1px solid var(--border);
       padding-bottom: 1px;
       transition: color 0.15s, border-color 0.15s;
     }
-
-    .link-subtle:hover {
-      color: var(--text);
-      border-color: var(--text-dim);
-    }
+    .cta-secondary:hover { color: var(--text); border-color: var(--text-dim); }
 
     /* ── DIVIDER ── */
     .divider {
@@ -133,9 +131,9 @@
     /* ── SECTION LABELS ── */
     .section-label {
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       font-weight: 500;
-      letter-spacing: 0.14em;
+      letter-spacing: 0.15em;
       text-transform: uppercase;
       color: var(--text-dim);
       margin-bottom: 1rem;
@@ -160,58 +158,44 @@
       justify-content: space-between;
     }
 
-    .demo-dots {
-      display: flex;
-      gap: 5px;
-    }
-
-    .demo-dots span {
-      width: 10px;
-      height: 10px;
-      border-radius: 50%;
-      background: var(--border);
-    }
+    .demo-dots { display: flex; gap: 5px; }
+    .demo-dots span { width: 10px; height: 10px; border-radius: 50%; background: var(--border); }
 
     .demo-lang {
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       color: var(--text-dim);
       letter-spacing: 0.08em;
     }
 
     .copy-btn {
       font-family: var(--mono);
-      font-size: 0.65rem;
+      font-size: 0.68rem;
       color: var(--text-dim);
       background: none;
       border: 1px solid var(--border);
       border-radius: 3px;
-      padding: 0.2rem 0.5rem;
+      padding: 0.2rem 0.55rem;
       cursor: pointer;
       transition: color 0.15s, border-color 0.15s;
     }
-
-    .copy-btn:hover {
-      color: var(--text);
-      border-color: var(--text-dim);
-    }
+    .copy-btn:hover { color: var(--text); border-color: var(--text-dim); }
 
     pre {
       font-family: var(--mono);
-      font-size: 0.78rem;
-      line-height: 1.7;
-      padding: 1.25rem 1.25rem;
+      font-size: 0.82rem;
+      line-height: 1.75;
+      padding: 1.25rem;
       overflow-x: auto;
       color: var(--text);
     }
 
-    .kw { color: #79c0ff; }
-    .str { color: #a5d6ff; }
-    .key { color: #ff7b72; }
+    .kw   { color: #79c0ff; }
+    .str  { color: #a5d6ff; }
+    .key  { color: #ff7b72; }
     .val-wait { color: var(--wait); }
-    .val-num { color: #ffa657; }
-    .comment { color: var(--text-dim); }
-    .punct { color: var(--text-dim); }
+    .val-num  { color: #ffa657; }
+    .punct    { color: var(--text-dim); }
 
     .response-block {
       background: var(--bg2);
@@ -219,168 +203,136 @@
       border-left: 3px solid var(--wait);
       border-radius: 6px;
       padding: 1rem 1.25rem;
-      margin-bottom: 0.5rem;
     }
-
-    .response-block pre {
-      padding: 0;
-    }
+    .response-block pre { padding: 0; }
 
     /* ── MAPPING ── */
-    .mapping {
-      margin-bottom: 0;
-    }
-
     .map-row {
       display: grid;
-      grid-template-columns: 140px 60px 1fr;
+      grid-template-columns: 145px 55px 1fr;
       gap: 0 1rem;
-      align-items: baseline;
-      padding: 0.55rem 0;
+      align-items: center;
+      padding: 0.65rem 0;
       border-bottom: 1px solid var(--border);
       font-family: var(--mono);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
     }
-
     .map-row:first-child { border-top: 1px solid var(--border); }
-
     .map-input { color: var(--text-dim); }
     .map-arrow { color: var(--text-dim); text-align: center; }
 
     .badge {
       display: inline-block;
-      font-size: 0.68rem;
+      font-size: 0.7rem;
       font-weight: 600;
-      padding: 0.15rem 0.45rem;
+      padding: 0.15rem 0.5rem;
       border-radius: 3px;
       letter-spacing: 0.06em;
     }
-
     .badge-wait { background: rgba(63,185,80,0.15); color: var(--wait); }
     .badge-cap  { background: rgba(227,179,65,0.15); color: var(--cap); }
-    .badge-stop { background: rgba(248,81,73,0.15); color: var(--stop); }
+    .badge-stop { background: rgba(248,81,73,0.15);  color: var(--stop); }
+
+    .map-row-inner { display: flex; align-items: center; gap: 0.6rem; }
 
     .map-desc {
       color: var(--text);
       font-family: var(--sans);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
       font-weight: 300;
-    }
-
-    .map-row-inner {
-      display: flex;
-      align-items: center;
-      gap: 0.6rem;
     }
 
     .thesis {
       margin-top: 1.25rem;
-      font-size: 0.88rem;
+      font-size: 0.95rem;
       color: var(--text-dim);
       font-style: italic;
       line-height: 1.6;
     }
-
-    .thesis strong {
-      color: var(--text);
-      font-style: normal;
-    }
+    .thesis strong { color: var(--text); font-style: normal; }
 
     /* ── PROOF ── */
-    .proof-item {
-      padding: 1.25rem 0;
+    .proof-list {
+      list-style: none;
+      border-top: 1px solid var(--border);
+    }
+
+    .proof-list li {
+      display: flex;
+      gap: 0.75rem;
+      align-items: baseline;
+      padding: 0.75rem 0;
       border-bottom: 1px solid var(--border);
-    }
-
-    .proof-item:first-child { border-top: 1px solid var(--border); }
-
-    .proof-repo {
-      font-family: var(--mono);
-      font-size: 0.72rem;
-      color: var(--accent);
-      margin-bottom: 0.35rem;
-      display: block;
-    }
-
-    .proof-text {
-      font-size: 0.88rem;
+      font-size: 0.95rem;
       color: var(--text);
-      line-height: 1.6;
+      line-height: 1.5;
     }
 
-    .proof-text em {
-      color: var(--text-dim);
-      font-style: normal;
-      font-size: 0.82rem;
+    .proof-list li::before {
+      content: '→';
+      font-family: var(--mono);
+      font-size: 0.75rem;
+      color: var(--accent);
+      flex-shrink: 0;
+      margin-top: 0.1rem;
     }
 
     .proof-note {
-      margin-top: 1.25rem;
+      margin-top: 1rem;
       font-family: var(--mono);
-      font-size: 0.72rem;
+      font-size: 0.74rem;
       color: var(--text-dim);
     }
-
-    .proof-note a {
-      color: var(--accent);
-      text-decoration: none;
-    }
-
+    .proof-note a { color: var(--accent); text-decoration: none; }
     .proof-note a:hover { text-decoration: underline; }
 
     /* ── HOW IT WORKS ── */
-    .steps {
-      counter-reset: step;
-      list-style: none;
-    }
-
+    .steps { counter-reset: step; list-style: none; }
     .steps li {
       counter-increment: step;
       display: flex;
       gap: 1rem;
       align-items: baseline;
-      padding: 0.6rem 0;
-      font-size: 0.88rem;
+      padding: 0.7rem 0;
+      font-size: 0.95rem;
       color: var(--text);
       border-bottom: 1px solid var(--border);
     }
-
     .steps li:first-child { border-top: 1px solid var(--border); }
-
     .steps li::before {
       content: counter(step);
       font-family: var(--mono);
-      font-size: 0.7rem;
+      font-size: 0.72rem;
       color: var(--text-dim);
       min-width: 1.2rem;
     }
 
-    /* ── CTA ── */
+    /* ── FINAL CTA ── */
     .cta-final {
       background: var(--bg2);
       border: 1px solid var(--border);
       border-radius: 6px;
-      padding: 2rem;
+      padding: 2.25rem 2rem;
     }
 
     .cta-final h2 {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 500;
-      color: var(--text-bright);
+      color: var(--bright);
       margin-bottom: 0.75rem;
       letter-spacing: -0.01em;
     }
 
     .cta-final p {
-      font-size: 0.88rem;
+      font-size: 0.95rem;
       color: var(--text-dim);
       margin-bottom: 1.25rem;
-      line-height: 1.6;
+      line-height: 1.65;
     }
 
     .email-link {
       font-family: var(--mono);
-      font-size: 0.82rem;
+      font-size: 0.88rem;
       color: var(--accent);
       text-decoration: none;
       display: inline-block;
@@ -388,12 +340,11 @@
       border-bottom: 1px solid rgba(88,166,255,0.3);
       padding-bottom: 1px;
     }
-
     .email-link:hover { border-color: var(--accent); }
 
     .cta-note {
       font-family: var(--mono);
-      font-size: 0.68rem;
+      font-size: 0.7rem;
       color: var(--text-dim);
       letter-spacing: 0.04em;
     }
@@ -409,47 +360,38 @@
       flex-wrap: wrap;
       gap: 0.75rem;
     }
-
     .footer-id {
       font-family: var(--mono);
-      font-size: 0.68rem;
+      font-size: 0.7rem;
       color: var(--text-dim);
     }
-
-    .footer-links {
-      display: flex;
-      gap: 1.25rem;
-    }
-
+    .footer-links { display: flex; gap: 1.25rem; }
     .footer-links a {
       font-family: var(--mono);
-      font-size: 0.68rem;
+      font-size: 0.7rem;
       color: var(--text-dim);
       text-decoration: none;
       transition: color 0.15s;
     }
-
     .footer-links a:hover { color: var(--text); }
 
     /* ── RESPONSIVE ── */
     @media (max-width: 600px) {
+      body { font-size: 16px; }
       .container { padding: 3rem 0 4rem; }
+      h1 { font-size: 1.65rem; }
 
       .map-row {
         grid-template-columns: 1fr;
-        gap: 0.2rem;
-        padding: 0.75rem 0;
+        gap: 0.25rem;
+        padding: 0.85rem 0;
       }
-
       .map-arrow { display: none; }
-
       .map-row-inner { margin-top: 0.2rem; }
-
       .cta-group { flex-direction: column; align-items: flex-start; gap: 1rem; }
-
       .footer { flex-direction: column; }
-
-      pre { font-size: 0.7rem; }
+      pre { font-size: 0.75rem; }
+      .cta-final { padding: 1.5rem 1.25rem; }
     }
   </style>
 </head>
@@ -459,14 +401,17 @@
   <!-- HERO -->
   <section class="hero">
     <span class="label">Pitstop / 429 Classifier</span>
-    <h1>Not all 429s are the same.<br><span>Treat them the same, and you burn budget.</span></h1>
+    <h1>Your retry logic is probably<br><em>burning budget.</em></h1>
     <p class="subhead">
-      Paste status + headers.<br>
-      Get <strong>WAIT / CAP / STOP</strong> + what to change.
+      Paste one 429 response. Get the right next action:<br>
+      wait, shrink, or stop.
+    </p>
+    <p class="audience">
+      For engineers shipping agents, SDKs, proxies, or retry loops that misbehave under load.
     </p>
     <div class="cta-group">
       <a href="#demo" class="btn">Try the classifier ↓</a>
-      <a href="mailto:brentondwilliams@gmail.com" class="link-subtle">or send a redacted failure block →</a>
+      <a href="mailto:brentondwilliams@gmail.com" class="cta-secondary">No time? Email one redacted failure block →</a>
     </div>
   </section>
 
@@ -488,8 +433,8 @@
     <div class="response-block">
       <pre><span class="punct">{</span>
   <span class="key">"classification"</span><span class="punct">:</span> <span class="val-wait">"WAIT"</span><span class="punct">,</span>
-  <span class="key">"action"</span><span class="punct">:</span> <span class="str">"Honor Retry-After header. Retry after 30s."</span><span class="punct">,</span>
-  <span class="key">"knob"</span><span class="punct">:</span> <span class="str">"retry_after_floor_ms"</span>
+  <span class="key">"action"</span><span class="punct">:</span>         <span class="str">"Honor Retry-After header. Retry after 30s."</span><span class="punct">,</span>
+  <span class="key">"knob"</span><span class="punct">:</span>           <span class="str">"retry_after_floor_ms"</span>
 <span class="punct">}</span></pre>
     </div>
   </section>
@@ -499,13 +444,13 @@
   <!-- MAPPING -->
   <section style="margin-bottom:3rem;">
     <span class="section-label">Why it matters</span>
-    <div class="mapping">
+    <div>
       <div class="map-row">
         <span class="map-input">retry-after: 30</span>
         <span class="map-arrow">→</span>
         <div class="map-row-inner">
           <span class="badge badge-wait">WAIT</span>
-          <span class="map-desc">Honor header. Retry after delay.</span>
+          <span class="map-desc">Delay, then retry.</span>
         </div>
       </div>
       <div class="map-row">
@@ -513,7 +458,7 @@
         <span class="map-arrow">→</span>
         <div class="map-row-inner">
           <span class="badge badge-cap">CAP</span>
-          <span class="map-desc">Reduce concurrency. Don't retry immediately.</span>
+          <span class="map-desc">Reduce concurrency first.</span>
         </div>
       </div>
       <div class="map-row">
@@ -521,7 +466,7 @@
         <span class="map-arrow">→</span>
         <div class="map-row-inner">
           <span class="badge badge-stop">STOP</span>
-          <span class="map-desc">Quota exhausted. Don't retry. Surface to caller.</span>
+          <span class="map-desc">Do not retry. Surface to caller.</span>
         </div>
       </div>
     </div>
@@ -535,34 +480,13 @@
   <!-- PROOF -->
   <section style="margin-bottom:3rem;">
     <span class="section-label">Proof</span>
-
-    <div class="proof-item">
-      <span class="proof-repo">massgen/MassGen · PR #1024 · merged March 2026</span>
-      <p class="proof-text">
-        Adopted WAIT/CAP/STOP in a production circuit breaker (with attribution).
-        1,631 lines. 62 tests. Default threshold adjusted based on corpus data.
-        <em>— ncrispino: "Thanks @amabito and @SirBrenton, lgtm — merging w/ this release"</em>
-      </p>
-    </div>
-
-    <div class="proof-item">
-      <span class="proof-repo">continuedev/continue · PR #11773 · merged March 2026</span>
-      <p class="proof-text">
-        Retry architecture fix landed in a thread with pitstop-check findings attached.
-        Stream retry moved to BaseLLM layer. Smarter 429 error detection shipped.
-      </p>
-    </div>
-
-    <div class="proof-item">
-      <span class="proof-repo">Corpus · 18 classified failure receipts</span>
-      <p class="proof-text">
-        Real production failures across LangChain, OpenClaw, Vercel AI SDK,
-        cc-switch, Zulip, and others. Machine-readable. Structured schema.
-      </p>
-    </div>
-
+    <ul class="proof-list">
+      <li>Production adoption in MassGen — circuit breaker PR, 1,631 lines, 62 tests, merged with attribution.</li>
+      <li>Retry architecture influence in Continue.dev — fix landed in thread with pitstop-check findings attached.</li>
+      <li>22 classified failure receipts across real systems — LangChain, OpenClaw, Vercel AI, and others.</li>
+    </ul>
     <p class="proof-note">
-      All examples derived from real production failures. &nbsp;
+      Built from real production failures, not toy examples. &nbsp;
       <a href="https://github.com/SirBrenton/pitstop-truth" target="_blank">github.com/SirBrenton/pitstop-truth →</a>
     </p>
   </section>
@@ -586,9 +510,9 @@
     <div class="cta-final">
       <h2>Have a weird 429?</h2>
       <p>
-        Send one redacted failure block or retry config.
-        Stack, error, headers — whatever you have.
-        I'll send back a concrete diagnosis. No call needed.
+        Send one redacted failure block or retry config —
+        stack, error, headers, whatever you have.<br>
+        I'll tell you what to cap first. No call needed.
       </p>
       <a href="mailto:brentondwilliams@gmail.com" class="email-link">brentondwilliams@gmail.com</a>
       <br />
@@ -600,8 +524,8 @@
   <footer class="footer">
     <span class="footer-id">Pitstop · execution reliability primitives</span>
     <div class="footer-links">
-      <a href="https://github.com/SirBrenton/pitstop-truth" target="_blank">pitstop-truth</a>
-      <a href="https://github.com/SirBrenton/pitstop-check" target="_blank">pitstop-check</a>
+      <a href="https://github.com/SirBrenton/pitstop-truth" target="_blank">corpus</a>
+      <a href="https://github.com/SirBrenton/pitstop-check" target="_blank">checker</a>
       <a href="https://web-production-273d3.up.railway.app/classify" target="_blank">api</a>
     </div>
   </footer>
