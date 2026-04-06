@@ -407,7 +407,9 @@
       wait, shrink, or stop.
     </p>
     <p class="audience">
-      For engineers shipping agents, SDKs, proxies, or retry loops that misbehave under load.
+    3 production fixes shipped within 24h of diagnosis. 
+    For engineers shipping agents, SDKs, proxies, or retry 
+    loops that misbehave under load.
     </p>
     <div class="cta-group">
       <a href="#demo" class="btn">Try the classifier ↓</a>
@@ -481,9 +483,11 @@
   <section style="margin-bottom:3rem;">
     <span class="section-label">Proof</span>
     <ul class="proof-list">
-      <li>Production adoption in MassGen — circuit breaker PR, 1,631 lines, 62 tests, merged with attribution.</li>
-      <li>Retry architecture influence in Continue.dev — fix landed in thread with pitstop-check findings attached.</li>
-      <li>22 classified failure receipts across real systems — LangChain, OpenClaw, Vercel AI, and others.</li>
+      <li>cline/cline #10139 — maintainer confirmed root cause in retry.ts, PR opened within 24h.</li>
+      <li>oh-my-openagent #3126 — fix merged within 24h, STOP_ERROR_NAMES shipped to production.</li>
+      <li>MassGen PR #1024 — WAIT/CAP/STOP adopted in production circuit breaker, 1,631 lines, 62 tests, @SirBrenton credited.</li>
+      <li>Continue.dev PR #11773 — retry architecture fix landed in thread with pitstop-check findings.</li>
+      <li>26 classified failure receipts across real systems — LangChain, OpenClaw, Vercel AI, Claude Code, and others.</li>
     </ul>
     <p class="proof-note">
       Built from real production failures, not toy examples. &nbsp;
