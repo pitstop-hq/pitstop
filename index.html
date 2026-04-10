@@ -773,9 +773,9 @@ provider=vertexai</textarea>
     }
 
     let retryAfterSec = null;
-    const msMatch  = raw.match(/retry-after-ms[=:]\s*(\d+)/);
+    const msMatch  = raw.match(/retry-after-ms\s*[=:]\s*(\d+)/i);
     if (msMatch) retryAfterSec = parseInt(msMatch[1]) / 1000;
-    const secMatch = raw.match(/retry-after[^-\w][=:]\s*(\d+)/);
+    const secMatch = raw.match(/retry-after\s*[=:]\s*(\d+)/i);
     if (!msMatch && secMatch) retryAfterSec = parseInt(secMatch[1]);
 
     if (retryAfterSec !== null && retryAfterSec > 600) {
