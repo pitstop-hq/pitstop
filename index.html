@@ -70,15 +70,25 @@
       letter-spacing: -0.025em;
     }
 
+    .hero-sub-headline {
+      font-family: var(--sans);
+      font-size: clamp(1.3rem, 3vw, 1.75rem);
+      font-weight: 500;
+      color: var(--bright);
+      line-height: 1.25;
+      letter-spacing: -0.02em;
+      margin-bottom: 0.8rem;
+    }
+
     .subhead {
       font-size: 1.05rem;
       color: var(--text-dim);
       line-height: 1.65;
-      max-width: 500px;
+      max-width: 520px;
     }
 
     /* ── TOOL ── */
-    .tool-block { margin-bottom: 3rem; }
+    .tool-block { margin-bottom: 0; }
 
     .tool-label {
       font-family: var(--mono);
@@ -288,6 +298,28 @@
       letter-spacing: 0.03em;
     }
 
+    /* ── SPINE LINE ── */
+    .spine {
+      margin-top: 2rem;
+      margin-bottom: 3rem;
+      padding: 1rem 1.2rem;
+      border-left: 2px solid var(--stop);
+      background: rgba(248,81,73,0.04);
+      border-radius: 0 4px 4px 0;
+    }
+
+    .spine p {
+      font-size: 0.98rem;
+      color: var(--text);
+      line-height: 1.6;
+      font-style: italic;
+    }
+
+    .spine p strong {
+      color: var(--bright);
+      font-style: normal;
+    }
+
     /* ── DIVIDER ── */
     .divider {
       border: none;
@@ -382,25 +414,46 @@
     .thesis strong { color: var(--text); font-style: normal; }
 
     /* ── DUAL CTA ── */
+    .cta-section-header {
+      margin-bottom: 1.5rem;
+    }
+
+    .cta-section-header h2 {
+      font-size: 1.3rem;
+      font-weight: 500;
+      color: var(--bright);
+      letter-spacing: -0.02em;
+      line-height: 1.25;
+      margin-bottom: 0.4rem;
+    }
+
+    .cta-section-header p {
+      font-size: 0.9rem;
+      color: var(--text-dim);
+      line-height: 1.6;
+    }
+
     .cta-dual {
       display: grid;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: 1fr 1.4fr;
       gap: 1rem;
       margin-bottom: 3rem;
+      align-items: start;
     }
 
     .cta-card {
       background: var(--bg2);
       border: 1px solid var(--border2);
       border-radius: 6px;
-      padding: 1.6rem 1.5rem;
+      padding: 1.5rem;
       display: flex;
       flex-direction: column;
     }
 
     .cta-card.paid {
-      border-color: rgba(88,166,255,0.3);
-      background: linear-gradient(160deg, rgba(88,166,255,0.04) 0%, var(--bg2) 60%);
+      border-color: rgba(88,166,255,0.35);
+      background: linear-gradient(160deg, rgba(88,166,255,0.05) 0%, var(--bg2) 55%);
+      padding: 1.75rem;
     }
 
     .cta-tier {
@@ -410,33 +463,35 @@
       letter-spacing: 0.16em;
       text-transform: uppercase;
       color: var(--text-dim);
-      margin-bottom: 0.85rem;
+      margin-bottom: 0.75rem;
     }
 
-    .cta-card.paid .cta-tier {
-      color: var(--accent);
-    }
+    .cta-card.paid .cta-tier { color: var(--accent); }
 
     .cta-card h3 {
-      font-size: 1rem;
+      font-size: 0.97rem;
       font-weight: 500;
       color: var(--bright);
       line-height: 1.3;
-      margin-bottom: 0.6rem;
+      margin-bottom: 0.55rem;
       letter-spacing: -0.01em;
     }
 
+    .cta-card.paid h3 {
+      font-size: 1.05rem;
+    }
+
     .cta-card p {
-      font-size: 0.84rem;
+      font-size: 0.83rem;
       color: var(--text-dim);
       line-height: 1.6;
-      margin-bottom: 1.25rem;
+      margin-bottom: 1.1rem;
       flex-grow: 1;
     }
 
     .cta-price {
       font-family: var(--mono);
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 600;
       color: var(--bright);
       margin-bottom: 1rem;
@@ -444,7 +499,7 @@
     }
 
     .cta-price span {
-      font-size: 0.7rem;
+      font-size: 0.68rem;
       font-weight: 400;
       color: var(--text-dim);
       letter-spacing: 0.04em;
@@ -453,12 +508,14 @@
     .cta-deliverables {
       list-style: none;
       margin-bottom: 1.25rem;
+      border-top: 1px solid var(--border);
+      padding-top: 0.85rem;
     }
 
     .cta-deliverables li {
       font-size: 0.8rem;
       color: var(--text-dim);
-      padding: 0.2rem 0;
+      padding: 0.22rem 0;
       display: flex;
       gap: 0.5rem;
       align-items: baseline;
@@ -472,33 +529,37 @@
       flex-shrink: 0;
     }
 
-    .btn-cta-free {
-      display: inline-block;
-      font-family: var(--mono);
-      font-size: 0.78rem;
-      font-weight: 600;
+    .cta-deliverables li.highlight {
       color: var(--text);
+    }
+
+    .btn-cta-free {
+      display: block;
+      font-family: var(--mono);
+      font-size: 0.77rem;
+      font-weight: 600;
+      color: var(--text-dim);
       background: none;
       border: 1px solid var(--border2);
       border-radius: 4px;
-      padding: 0.65rem 1.1rem;
+      padding: 0.6rem 1rem;
       text-decoration: none;
       letter-spacing: 0.04em;
       transition: border-color 0.15s, color 0.15s;
       text-align: center;
     }
-    .btn-cta-free:hover { border-color: var(--text-dim); color: var(--bright); }
+    .btn-cta-free:hover { border-color: var(--text-dim); color: var(--text); }
 
     .btn-cta-paid {
-      display: inline-block;
+      display: block;
       font-family: var(--mono);
-      font-size: 0.78rem;
+      font-size: 0.82rem;
       font-weight: 600;
       color: #0a0c0f;
       background: var(--accent);
       border: none;
       border-radius: 4px;
-      padding: 0.65rem 1.1rem;
+      padding: 0.75rem 1.1rem;
       text-decoration: none;
       letter-spacing: 0.04em;
       transition: opacity 0.15s;
@@ -507,9 +568,9 @@
     .btn-cta-paid:hover { opacity: 0.88; }
 
     .cta-note {
-      margin-top: 0.65rem;
+      margin-top: 0.6rem;
       font-family: var(--mono);
-      font-size: 0.62rem;
+      font-size: 0.61rem;
       color: var(--text-dim);
       letter-spacing: 0.04em;
       text-align: center;
@@ -533,10 +594,7 @@
       letter-spacing: 0.06em;
     }
 
-    .footer-links {
-      display: flex;
-      gap: 1.25rem;
-    }
+    .footer-links { display: flex; gap: 1.25rem; }
 
     .footer-links a {
       font-family: var(--mono);
@@ -573,10 +631,11 @@
 
   <!-- HERO -->
   <section class="hero">
-    <h1>Paste your failure.<br>Get the right action.</h1>
+    <h1>429s burning your budget?</h1>
+    <p class="hero-sub-headline">Paste your failure, I'll tell you what's wrong.</p>
     <p class="subhead">
-      Paste the failure. Find out if your system should retry,
-      back off, or stop entirely.
+      Paste the failure. Find out if your system is retrying something
+      it should stop — and what that decision is costing you.
     </p>
   </section>
 
@@ -626,6 +685,15 @@ provider=vertexai</textarea>
     </div>
   </section>
 
+  <!-- SPINE LINE -->
+  <div class="spine">
+    <p>
+      The wrong retry decision turns failures into
+      <strong>wasted runtime, hidden cost, and false progress.</strong>
+      <br>Most systems only find out after the damage is done.
+    </p>
+  </div>
+
   <hr class="divider" />
 
   <!-- PROOF -->
@@ -633,15 +701,15 @@ provider=vertexai</textarea>
     <span class="section-label">Used to fix real failures in production</span>
 
     <div class="proof-card">
-      <p class="proof-outcome">Stopped a 3-hour retry loop from silently stalling execution</p>
-      <p class="proof-detail">Root cause identified in retry.ts — fix shipped within 24 hours</p>
+      <p class="proof-outcome">Stopped a 3-hour retry loop from consuming attempts with no forward progress</p>
+      <p class="proof-detail">Root cause identified in retry logic — wasted execution eliminated, fix shipped within 24 hours</p>
       <span class="proof-class" style="background:rgba(248,81,73,0.12);color:var(--stop);">STOP</span>
       <span class="proof-tag">Cline #10139</span>
     </div>
 
     <div class="proof-card">
-      <p class="proof-outcome">Turned quota exhaustion into an immediate STOP instead of infinite retries</p>
-      <p class="proof-detail">STOP_ERROR_NAMES classification added and deployed same day</p>
+      <p class="proof-outcome">Prevented long-window quota retries from stalling execution and delaying fallback</p>
+      <p class="proof-detail">STOP classification added — infinite retries on exhausted quota eliminated same day</p>
       <span class="proof-class" style="background:rgba(248,81,73,0.12);color:var(--stop);">STOP</span>
       <span class="proof-tag">oh-my-openagent #3126</span>
     </div>
@@ -703,7 +771,11 @@ provider=vertexai</textarea>
 
   <!-- DUAL CTA -->
   <section style="margin-bottom:1rem;">
-    <span class="section-label">Get the diagnosis</span>
+    <div class="cta-section-header">
+      <h2>Find the failure that's costing you<br>time or money</h2>
+      <p>Send one redacted failure block — raw logs, headers, or whatever you have.</p>
+    </div>
+
     <div class="cta-dual">
 
       <!-- FREE -->
@@ -711,9 +783,8 @@ provider=vertexai</textarea>
         <span class="cta-tier">Free</span>
         <h3>Contribute a failure.<br>Get the fix.</h3>
         <p>
-          Send one redacted failure block. I'll classify it
-          and tell you what your system is doing wrong —
-          and what to change first.
+          One failure block. I'll classify it and tell you
+          what to change first.
         </p>
         <a href="mailto:brentondwilliams@gmail.com?subject=Failure%20contribution" class="btn-cta-free">
           Send a failure →
@@ -724,19 +795,21 @@ provider=vertexai</textarea>
       <!-- PAID -->
       <div class="cta-card paid">
         <span class="cta-tier">Paid</span>
-        <h3>48-Hour<br>Failure Audit</h3>
+        <h3>48-Hour Failure Audit</h3>
         <p>
-          Full intake + scan on your real execution data.
-          Ranked hazards, guardrail plan, exact fixes.
+          Full intake and scan on your real execution data.
+          I'll show you everything that's wrong, what it's
+          costing you, and what to fix first.
         </p>
         <div class="cta-price">$2,500 <span>· flat fee</span></div>
         <ul class="cta-deliverables">
+          <li class="highlight">Economic consequence analysis per hazard class</li>
           <li>Ranked hazard pack</li>
-          <li>Guardrail plan with knobs</li>
+          <li>Guardrail plan with first knobs</li>
           <li>Before/after verification checklist</li>
           <li>48-hour turnaround</li>
         </ul>
-        <a href="mailto:brentondwilliams@gmail.com?subject=Failure%20Audit" class="btn-cta-paid">
+        <a href="mailto:brentondwilliams@gmail.com?subject=Failure%20Audit%20Request" class="btn-cta-paid">
           Request audit →
         </a>
         <p class="cta-note">async · no call required</p>
