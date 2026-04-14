@@ -634,6 +634,7 @@
     <h1>429s burning your budget?</h1>
     <p class="hero-sub-headline">Paste your failure, I'll tell you what's wrong.</p>
     <p class="subhead">
+      5 production fixes shipped within 24-48h of diagnosis.<br>
       Paste the failure. Find out if your system is retrying something
       it should stop — and what that decision is costing you.
     </p>
@@ -688,9 +689,8 @@ provider=vertexai</textarea>
   <!-- SPINE LINE -->
   <div class="spine">
     <p>
-      The wrong retry decision turns failures into
-      <strong>wasted runtime, hidden cost, and false progress.</strong>
-      <br>Most systems only find out after the damage is done.
+      The value of classification isn't just knowing what the failure is.
+      <strong>It's knowing what will happen next if you keep treating it the wrong way.</strong> Most systems only find out after the damage is done.
     </p>
   </div>
 
@@ -728,6 +728,28 @@ provider=vertexai</textarea>
       <p class="proof-detail">Findings applied directly in PR — fix landed in-thread</p>
       <span class="proof-class" style="background:rgba(63,185,80,0.12);color:var(--wait);">WAIT</span>
       <span class="proof-tag">Continue.dev #11773</span>
+    </div>
+
+    <div class="proof-card">
+      <p class="proof-outcome">retry-after cap at 10s removed — quota exhaustion now surfaces immediately</p>
+      <p class="proof-detail">executeWithRetry was truncating 3-hour retry-after to 10s — fix merged within 48h</p>
+      <span class="proof-class" style="background:rgba(248,81,73,0.12);color:var(--stop);">STOP</span>
+      <span class="proof-tag">lobehub #13572</span>
+    </div>
+
+    <div class="proof-card">
+      <p class="proof-outcome">WAIT/STOP classification rule shipped into production retry layer</p>
+      <p class="proof-detail">Exact threshold rule from diagnosis implemented in PR-B — merged same day</p>
+      <span class="proof-class" style="background:rgba(63,185,80,0.12);color:var(--wait);">WAIT</span>
+      <span class="proof-class" style="background:rgba(248,81,73,0.12);color:var(--stop);">STOP</span>
+      <span class="proof-tag">nanobot #2760</span>
+    </div>
+
+    <div class="proof-card">
+      <p class="proof-outcome">Quota cascade and 30-minute provider lockout eliminated</p>
+      <p class="proof-detail">quota_exhausted decoupled from credential backoff — STOP/WAIT distinction shipped</p>
+      <span class="proof-class" style="background:rgba(248,81,73,0.12);color:var(--stop);">STOP</span>
+      <span class="proof-tag">gsd-build #3548</span>
     </div>
 
     <div class="proof-card">
