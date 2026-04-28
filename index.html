@@ -4,6 +4,17 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Pitstop — Execution Failure Classifier</title>
+
+  <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-P5VNEXSEMH"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+
+    gtag('config', 'G-P5VNEXSEMH');
+  </script>
+
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600&family=IBM+Plex+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
   <style>
@@ -808,7 +819,9 @@ provider=vertexai</textarea>
           One failure block. I'll classify it and tell you
           what to change first.
         </p>
-        <a href="mailto:brent@pitstop.dev?subject=Failure%20contribution" class="btn-cta-free">
+        <a href="mailto:brent@pitstop.dev?subject=Failure%20contribution"
+          class="btn-cta-free"
+          onclick="if (window.gtag) gtag('event', 'failure_contribution_clicked', { event_category: 'conversion', event_label: 'free_cta' });">
           Send a failure →
         </a>
         <p class="cta-note">classification + first action · async</p>
@@ -831,7 +844,9 @@ provider=vertexai</textarea>
           <li>Before/after verification checklist</li>
           <li>48-hour turnaround</li>
         </ul>
-        <a href="mailto:brent@pitstop.dev?subject=Failure%20Audit%20Request" class="btn-cta-paid">
+        <a href="mailto:brent@pitstop.dev?subject=Failure%20Audit%20Request"
+          class="btn-cta-paid"
+          onclick="if (window.gtag) gtag('event', 'audit_request_clicked', { event_category: 'conversion', event_label: 'paid_cta' });">
           Request audit →
         </a>
         <p class="cta-note">async · no call required</p>
@@ -944,12 +959,26 @@ provider=vertexai</textarea>
     const input = document.getElementById('failure-input').value;
     if (!input.trim()) return;
 
+    if (window.gtag) {
+      gtag('event', 'diagnose_clicked', {
+        event_category: 'engagement',
+        event_label: 'hero_tool'
+      });
+    }
+
     btn.classList.add('loading');
     btn.querySelector('.btn-text').textContent = 'Classifying…';
     panel.classList.remove('visible');
 
     setTimeout(() => {
       const r = classify(input);
+
+      if (window.gtag) {
+        gtag('event', 'diagnose_result', {
+          event_category: 'engagement',
+          event_label: r.classification || 'unknown'
+        });
+      }
 
       const badge = document.getElementById('result-badge');
       badge.textContent = r.classification;
