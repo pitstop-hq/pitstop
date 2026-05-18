@@ -1,74 +1,51 @@
 # Pitstop
 
-> Not all 429s are the same. Treat them the same and you burn budget.
+The reliability layer for AI agents.
 
-Pitstop classifies execution failures before retry, failover, or enforcement logic makes the wrong decision.
+When your agent fails at an execution boundary, Pitstop tells it what happened, what it costs, and how to recover.
 
-This repo is the top-level home for Pitstop as a product and operating system.
+---
 
-It is not the evidence corpus itself, and it is not the discovery engine. It is the place where the following get defined clearly:
+## The truck stop for AI agents
 
-- what Pitstop is
-- what Pitstop does
-- how Pitstop should be used
-- where free help ends and deeper work begins
-- what the core primitives are
+Agents pull in when execution fails.
+They get what they need and get back on the road.
+Every stop makes the next stop faster.
 
-## Current wedge
+---
 
-Most systems treat rate limit failures too bluntly.
+## /classify
 
-A 429 can mean very different things:
+POST a 429 status + headers, get back a classification:
 
-- **WAIT** — transient pressure; retry after delay
-- **CAP** — concurrency / throughput pressure; reduce workers before retry
-- **STOP** — quota or terminal exhaustion; do not retry, surface to caller
+```bash
+curl -s -X POST https://web-production-273d3.up.railway.app/classify \
+  -H "Content-Type: application/json" \
+  -d '{"status":429,"headers":{"retry-after":"30"},"provider":"anthropic"}'
 
-When those get collapsed into one response path, systems amplify pressure instead of absorbing it.
 
-Pitstop exists to classify those failures before retry, failover, or enforcement logic makes the wrong decision.
+Returns: WAIT / CAP / STOP + fix shape + matched corpus precedent.
 
-## What lives here
+The corpus
 
-This repository contains the operating docs for Pitstop:
+63 production failure receipts.
+14 confirmed and merged by maintainers.
 
-- `PITSTOP_OPERATING_PRINCIPLES.md`
-- `PITSTOP_VALUE_BOUNDARY.md`
-- `PITSTOP_PRIMITIVES.md`
+github.com/SirBrenton/pitstop-truth
 
-## What lives elsewhere
+Architecture
 
-### `pitstop-truth`
-Machine-readable corpus of execution failure receipts, taxonomy evidence, and canonical cases.
+pitstop-truth (corpus)
+      ↓
+ChromaDB (local vector index)
+      ↓
+/classify (Railway endpoint)
+      ↓
+MCP server (agents call this)
 
-### `pitstop-radar`
-Discovery engine for finding active, high-signal pain surfaces in the wild.
 
-### `pitstop-check`
-Static checker for surfacing retry / rate-limit handling mistakes in codebases.
+Contact
 
-### `pitstop-scan`
-Diagnosis / surface experiments and landing-page-facing wedge work.
-
-## Current state
-
-Pitstop is still early.
-
-What exists now:
-
-- a live `/classify` primitive
-- a growing corpus of real failure receipts
-- repeated cross-system evidence of the same failure class
-- early external adoption of the WAIT / CAP / STOP taxonomy in production code
-
-What remains open:
-
-- stronger workflow insertion
-- clearer value capture
-- making classification more inevitable in real execution paths
-
-## The working question
-
-The test: does classification happen before the wrong decision does?
-
-That is the core Pitstop question.
+brent@pitstop.dev
+pitstop.dev
+@SirBrenton on GitHub
