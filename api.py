@@ -11,6 +11,7 @@ from pathlib import Path
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
 from typing import Optional
+from contextlib import asynccontextmanager  # ← move here
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -18,10 +19,21 @@ from pydantic import BaseModel
 # Add parent to path for retrieval imports
 sys.path.insert(0, str(Path(__file__).parent))
 
+@asynccontextmanager
+async def lifespan(app):
+    # Build ChromaDB index on startup
+    try:
+        from scripts.build_index import main as build_index
+        build_index()
+    except Exception as e:
+        print(f"Warning: index build failed: {e}")
+    yield
+
 app = FastAPI(
     title="Pitstop",
     description="The reliability layer for AI agents.",
     version="0.2.0",
+    lifespan=lifespan,
 )
 
 # ---------------------------------------------------------------------------
