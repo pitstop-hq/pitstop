@@ -1,31 +1,61 @@
 """
 corpus.py — receipt loading and text extraction.
 
-Loads receipts from pitstop-truth and builds
-the text representation used for embedding.
+Loads receipts from pitstop-truth (local dev)
+or bundled corpus/ directory (Railway production).
 """
 
 import json
+import os
 from pathlib import Path
 from typing import Optional
 
 
+# Local development path
 PITSTOP_TRUTH_DEFAULT = Path.home() / "Development-Projects" / "pitstop-truth"
+
+# Bundled corpus path (relative to this file's parent)
+BUNDLED_CORPUS = Path(__file__).parent.parent / "corpus"
 
 
 def find_receipt_paths(truth_dir: Optional[Path] = None) -> list[Path]:
     """
-    Find all receipt.json files in pitstop-truth.
+    Find all receipt.json files.
+
+    Priority:
+    1. Explicit truth_dir argument
+    2. PITSTOP_TRUTH_DIR environment variable
+    3. Local pitstop-truth repo (development)
+    4. Bundled corpus/ directory (Railway production)
     """
-    root = truth_dir or PITSTOP_TRUTH_DEFAULT
-    return sorted(root.glob("receipts/**/receipt.json"))
+    # Explicit argument
+    if truth_dir:
+        return sorted(truth_dir.glob("receipts/**/receipt.json"))
+
+    # Environment variable override
+    env_dir = os.environ.get("PITSTOP_TRUTH_DIR")
+    if env_dir:
+        p = Path(env_dir)
+        if p.exists():
+            return sorted(p.glob("receipts/**/receipt.json"))
+
+    # Local development path
+    if PITSTOP_TRUTH_DEFAULT.exists():
+        paths = sorted(PITSTOP_TRUTH_DEFAULT.glob("receipts/**/receipt.json"))
+        if paths:
+            return paths
+
+    # Bundled corpus fallback (Railway)
+    if BUNDLED_CORPUS.exists():
+        paths = sorted(BUNDLED_CORPUS.glob("*.json"))
+        if paths:
+            print(f"Using bundled corpus: {len(paths)} receipts")
+            return paths
+
+    return []
 
 
 def load_receipt(path: Path) -> Optional[dict]:
-    """
-    Load and parse a single receipt.json.
-    Returns None if invalid.
-    """
     try:
         return json.loads(path.read_text())
     except Exception:
@@ -33,15 +63,6 @@ def load_receipt(path: Path) -> Optional[dict]:
 
 
 def receipt_to_text(receipt: dict) -> str:
-    """
-    Convert a receipt to a text representation for embedding.
-
-    The text should capture:
-    - what the failure was
-    - what pattern it represents
-    - what the fix looks like
-    - tags for retrieval
-    """
     parts = []
 
     receipt_id = receipt.get("id", "")
@@ -82,10 +103,6 @@ def receipt_to_text(receipt: dict) -> str:
 
 
 def receipt_to_metadata(receipt: dict) -> dict:
-    """
-    Extract metadata fields for ChromaDB storage.
-    ChromaDB metadata values must be str, int, float, or bool.
-    """
     hazard = receipt.get("hazard", {})
     source = receipt.get("source", {})
 
@@ -105,10 +122,6 @@ def receipt_to_metadata(receipt: dict) -> dict:
 
 
 def load_all_receipts(truth_dir: Optional[Path] = None) -> list[tuple[dict, Path]]:
-    """
-    Load all receipts from pitstop-truth.
-    Returns list of (receipt_dict, path) tuples.
-    """
     paths = find_receipt_paths(truth_dir)
     results = []
 
