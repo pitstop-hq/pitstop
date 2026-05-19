@@ -280,16 +280,3 @@ def corpus_status():
         }
     except Exception as e:
         return {"status": "error", "error": str(e)}
-
-@app.get("/debug")
-def debug():
-    from pathlib import Path
-    import os
-    bundled = Path(__file__).parent / "corpus"
-    return {
-        "file": str(Path(__file__)),
-        "bundled_corpus": str(bundled),
-        "bundled_exists": bundled.exists(),
-        "bundled_count": len(list(bundled.glob("*.json"))) if bundled.exists() else 0,
-        "cwd": os.getcwd(),
-    }
