@@ -1,17 +1,19 @@
 """
 Pitstop /classify — corpus-backed execution failure classifier.
 
-POST /classify — returns WAIT/CAP/STOP with corpus-grounded precedent.
-GET  /health   — health check.
-GET  /corpus   — corpus status.
+POST /classify        — returns WAIT/CAP/STOP with corpus-grounded precedent.
+GET  /health          — health check.
+GET  /corpus          — corpus status.
+GET  /exhaust/summary — operational intelligence from logged calls.
 """
 
+import json
 import sys
-from pathlib import Path
+from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from email.utils import parsedate_to_datetime
+from pathlib import Path
 from typing import Optional
-from contextlib import asynccontextmanager  # ← move here
 
 from fastapi import FastAPI
 from pydantic import BaseModel
@@ -19,9 +21,19 @@ from pydantic import BaseModel
 # Add parent to path for retrieval imports
 sys.path.insert(0, str(Path(__file__).parent))
 
+# ---------------------------------------------------------------------------
+# Exhaust log path
+# ---------------------------------------------------------------------------
+
+EXHAUST_PATH = Path("data/exhaust.jsonl")
+
+
+# ---------------------------------------------------------------------------
+# Startup — build ChromaDB index
+# ---------------------------------------------------------------------------
+
 @asynccontextmanager
 async def lifespan(app):
-    # Build ChromaDB index on startup
     try:
         from scripts.build_index import main as build_index
         build_index()
@@ -29,12 +41,14 @@ async def lifespan(app):
         print(f"Warning: index build failed: {e}")
     yield
 
+
 app = FastAPI(
     title="Pitstop",
     description="The reliability layer for AI agents.",
     version="0.2.0",
     lifespan=lifespan,
 )
+
 
 # ---------------------------------------------------------------------------
 # Lazy ChromaDB init — only loads when first request arrives
@@ -87,6 +101,39 @@ class ClassifyResponse(BaseModel):
     fix_shape: str
     corpus_matches: list[CorpusMatch] = []
     corpus_grounded: bool = False
+
+
+# ---------------------------------------------------------------------------
+# Exhaust logging — zero friction, caller unaware
+# ---------------------------------------------------------------------------
+
+def log_exhaust(req: ClassifyRequest, response: ClassifyResponse) -> None:
+    """
+    Append every classify call to exhaust log.
+    Never breaks classification on logging failure.
+    """
+    try:
+        EXHAUST_PATH.parent.mkdir(parents=True, exist_ok=True)
+        record = {
+            "ts": datetime.now(timezone.utc).isoformat(),
+            "finding": req.finding or "",
+            "status": req.status,
+            "provider": req.provider or "",
+            "decision": response.classification.decision,
+            "confidence": response.classification.confidence,
+            "reason_code": response.classification.reason_code,
+            "retry_after_ms": response.classification.retry_after_ms,
+            "corpus_grounded": response.corpus_grounded,
+            "top_match": response.corpus_matches[0].receipt_id
+                         if response.corpus_matches else None,
+            "top_score": response.corpus_matches[0].score
+                         if response.corpus_matches else None,
+            "match_count": len(response.corpus_matches),
+        }
+        with open(EXHAUST_PATH, "a") as f:
+            f.write(json.dumps(record) + "\n")
+    except Exception:
+        pass
 
 
 # ---------------------------------------------------------------------------
@@ -150,7 +197,7 @@ def query_corpus(finding: str, n: int = 3) -> list[CorpusMatch]:
 
 def build_finding_text(req: ClassifyRequest) -> str:
     """
-    Build a finding text for corpus search from the request.
+    Build finding text for corpus search from the request.
     Uses explicit finding field if provided, otherwise builds
     from status + headers.
     """
@@ -231,7 +278,7 @@ def classify(req: ClassifyRequest):
     finding_text = build_finding_text(req)
     corpus_matches = query_corpus(finding_text, n=3)
 
-    return ClassifyResponse(
+    response = ClassifyResponse(
         classification=Classification(
             decision=decision,
             confidence=confidence,
@@ -243,6 +290,9 @@ def classify(req: ClassifyRequest):
         corpus_matches=corpus_matches,
         corpus_grounded=len(corpus_matches) > 0,
     )
+
+    log_exhaust(req, response)
+    return response
 
 
 @app.get("/health")
@@ -280,3 +330,51 @@ def corpus_status():
         }
     except Exception as e:
         return {"status": "error", "error": str(e)}
+
+
+@app.get("/exhaust/summary")
+def exhaust_summary():
+    """
+    Summary of exhaust log — operational intelligence.
+    """
+    if not EXHAUST_PATH.exists():
+        return {"total_calls": 0, "decisions": {}, "providers": {}}
+
+    records = []
+    with open(EXHAUST_PATH) as f:
+        for line in f:
+            try:
+                records.append(json.loads(line))
+            except Exception:
+                pass
+
+    if not records:
+        return {"total_calls": 0}
+
+    decisions = {}
+    providers = {}
+    ungrounded = 0
+    novel_patterns = []
+
+    for r in records:
+        d = r.get("decision", "unknown")
+        decisions[d] = decisions.get(d, 0) + 1
+
+        p = r.get("provider", "unknown") or "unknown"
+        providers[p] = providers.get(p, 0) + 1
+
+        if not r.get("corpus_grounded"):
+            ungrounded += 1
+            if r.get("finding"):
+                novel_patterns.append(r["finding"][:100])
+
+    return {
+        "total_calls": len(records),
+        "decisions": decisions,
+        "providers": providers,
+        "corpus_grounded_rate": round(
+            (len(records) - ungrounded) / len(records), 3
+        ) if records else 0,
+        "ungrounded_calls": ungrounded,
+        "potential_novel_patterns": novel_patterns[:5],
+    }
