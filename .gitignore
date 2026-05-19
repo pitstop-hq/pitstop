@@ -6,3 +6,4 @@ __pycache__/
 dist/
 build/
 retrieval/__pycache__/
+**/__pycache__/
