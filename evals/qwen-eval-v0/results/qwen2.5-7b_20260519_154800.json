@@ -1,0 +1,272 @@
+{
+  "model": "qwen2.5:7b",
+  "run_date": "2026-05-19T22:48:00.154960+00:00",
+  "total_cases": 15,
+  "correct": 9,
+  "accuracy": 0.6,
+  "avg_latency_ms": 24842,
+  "avg_tokens_per_case": 246,
+  "by_class": {
+    "WAIT": {
+      "correct": 2,
+      "total": 4,
+      "accuracy": 0.5,
+      "avg_confidence": 0.425
+    },
+    "CAP": {
+      "correct": 1,
+      "total": 5,
+      "accuracy": 0.2,
+      "avg_confidence": 0.85
+    },
+    "STOP": {
+      "correct": 6,
+      "total": 6,
+      "accuracy": 1.0,
+      "avg_confidence": 0.883
+    }
+  },
+  "by_difficulty": {
+    "easy": {
+      "correct": 1,
+      "total": 5,
+      "accuracy": 0.2
+    },
+    "hard": {
+      "correct": 8,
+      "total": 10,
+      "accuracy": 0.8
+    }
+  },
+  "confidence_routing_simulation": {
+    "threshold": 0.8,
+    "routed_to_local": 13,
+    "routed_to_escalation": 2,
+    "local_accuracy_above_threshold": 0.692,
+    "estimated_cost_savings_pct": 87
+  },
+  "failures": [
+    {
+      "case_id": "case-001",
+      "receipt_id": "PT-2026-03-21-github-openclaw-venice-models-429-retry-after-unwired",
+      "expected": "WAIT",
+      "got": "ERROR",
+      "confidence": 0.0,
+      "finding": "Venice API returns Retry-After: 600 but client ignores it and retries on own schedule causing 10-minute timeout block. retryAfterMs supported but never passed by callers.",
+      "latency_ms": 0
+    },
+    {
+      "case_id": "case-002",
+      "receipt_id": "PT-2026-02-25-github-issue-warden-groq-429-retry-after-ignored",
+      "expected": "WAIT",
+      "got": "ERROR",
+      "confidence": 0.0,
+      "finding": "Provider returns 429 with Retry-After: 30 but client ignores header and continues calling, wasting retries and thrashing fallback.",
+      "latency_ms": 0
+    },
+    {
+      "case_id": "case-003",
+      "receipt_id": "PT-2026-03-21-github-continue-dev-429-cap-wait-missing",
+      "expected": "CAP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "finding": "429 response with no Retry-After header. Client treats all 429s as retryable without distinguishing CAP from WAIT. No concurrency reduction applied.",
+      "latency_ms": 27999
+    },
+    {
+      "case_id": "case-005",
+      "receipt_id": "PT-2026-04-10-github-opencode-21960-retry-budget-boundary-missing",
+      "expected": "CAP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "finding": "Retryable errors enter a schedule with no maximum attempt count and no maximum total retry duration. Runtime stays in retry loop indefinitely. No Retry-After header present.",
+      "latency_ms": 25002
+    },
+    {
+      "case_id": "case-013",
+      "receipt_id": "PT-2026-04-17-github-feynman-110-hidden-runtime-retries",
+      "expected": "CAP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "finding": "Runtime layer intercepts 429 and retries silently before returning to caller. Caller never sees the 429. No Retry-After header. Hidden retry loop causes silent degradation.",
+      "latency_ms": 26549
+    },
+    {
+      "case_id": "case-014",
+      "receipt_id": "PT-2026-04-19-github-claude-code-50830-headerless-429-hidden-enforcer",
+      "expected": "CAP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "finding": "Anthropic returns 429 with no Retry-After header. Internal enforcer applies rate limiting before headers are emitted. Caller sees headerless 429 with no guidance. Failover blocked.",
+      "latency_ms": 28497
+    }
+  ],
+  "recommendation": "not_viable",
+  "cases": [
+    {
+      "case_id": "case-001",
+      "receipt_id": "PT-2026-03-21-github-openclaw-venice-models-429-retry-after-unwired",
+      "difficulty": "easy",
+      "expected": "WAIT",
+      "got": "ERROR",
+      "confidence": 0.0,
+      "correct": false,
+      "latency_ms": 0,
+      "tokens": 0
+    },
+    {
+      "case_id": "case-002",
+      "receipt_id": "PT-2026-02-25-github-issue-warden-groq-429-retry-after-ignored",
+      "difficulty": "easy",
+      "expected": "WAIT",
+      "got": "ERROR",
+      "confidence": 0.0,
+      "correct": false,
+      "latency_ms": 0,
+      "tokens": 0
+    },
+    {
+      "case_id": "case-003",
+      "receipt_id": "PT-2026-03-21-github-continue-dev-429-cap-wait-missing",
+      "difficulty": "easy",
+      "expected": "CAP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "correct": false,
+      "latency_ms": 27999,
+      "tokens": 277
+    },
+    {
+      "case_id": "case-004",
+      "receipt_id": "PT-2026-04-22-github-copilotkit-3637-retry-after-overridden",
+      "difficulty": "easy",
+      "expected": "WAIT",
+      "got": "WAIT",
+      "confidence": 0.85,
+      "correct": true,
+      "latency_ms": 33457,
+      "tokens": 295
+    },
+    {
+      "case_id": "case-005",
+      "receipt_id": "PT-2026-04-10-github-opencode-21960-retry-budget-boundary-missing",
+      "difficulty": "easy",
+      "expected": "CAP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "correct": false,
+      "latency_ms": 25002,
+      "tokens": 275
+    },
+    {
+      "case_id": "case-006",
+      "receipt_id": "PT-2026-04-02-github-gsd-3430-billing-gate-message-only-stop",
+      "difficulty": "hard",
+      "expected": "STOP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "correct": true,
+      "latency_ms": 31025,
+      "tokens": 292
+    },
+    {
+      "case_id": "case-007",
+      "receipt_id": "PT-2026-04-02-github-omp-607-stop-parent-child-propagation",
+      "difficulty": "hard",
+      "expected": "STOP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "correct": true,
+      "latency_ms": 21914,
+      "tokens": 275
+    },
+    {
+      "case_id": "case-008",
+      "receipt_id": "PT-2026-04-04-github-cline-10139-long-retry-after-misclassified-as-wait",
+      "difficulty": "hard",
+      "expected": "STOP",
+      "got": "STOP",
+      "confidence": 0.95,
+      "correct": true,
+      "latency_ms": 37302,
+      "tokens": 301
+    },
+    {
+      "case_id": "case-009",
+      "receipt_id": "PT-2026-03-25-github-openclaw-23317-timeout-misclassified-as-rate-limit",
+      "difficulty": "hard",
+      "expected": "STOP",
+      "got": "STOP",
+      "confidence": 0.95,
+      "correct": true,
+      "latency_ms": 29578,
+      "tokens": 277
+    },
+    {
+      "case_id": "case-010",
+      "receipt_id": "PT-2026-04-13-github-nanobot-2760-stacked-retry-amplification",
+      "difficulty": "hard",
+      "expected": "CAP",
+      "got": "CAP",
+      "confidence": 0.85,
+      "correct": true,
+      "latency_ms": 28677,
+      "tokens": 280
+    },
+    {
+      "case_id": "case-011",
+      "receipt_id": "PT-2026-03-31-github-openclaw-58442-quota-window-429-failover-gap",
+      "difficulty": "hard",
+      "expected": "STOP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "correct": true,
+      "latency_ms": 29298,
+      "tokens": 286
+    },
+    {
+      "case_id": "case-012",
+      "receipt_id": "PT-2026-04-16-github-copilot-cli-2760-retry-after-timeout-conflict",
+      "difficulty": "hard",
+      "expected": "WAIT",
+      "got": "WAIT",
+      "confidence": 0.85,
+      "correct": true,
+      "latency_ms": 29502,
+      "tokens": 293
+    },
+    {
+      "case_id": "case-013",
+      "receipt_id": "PT-2026-04-17-github-feynman-110-hidden-runtime-retries",
+      "difficulty": "hard",
+      "expected": "CAP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "correct": false,
+      "latency_ms": 26549,
+      "tokens": 281
+    },
+    {
+      "case_id": "case-014",
+      "receipt_id": "PT-2026-04-19-github-claude-code-50830-headerless-429-hidden-enforcer",
+      "difficulty": "hard",
+      "expected": "CAP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "correct": false,
+      "latency_ms": 28497,
+      "tokens": 284
+    },
+    {
+      "case_id": "case-015",
+      "receipt_id": "PT-2026-04-23-github-kiro-7212-credit-limit-retried-as-throttle",
+      "difficulty": "hard",
+      "expected": "STOP",
+      "got": "STOP",
+      "confidence": 0.85,
+      "correct": true,
+      "latency_ms": 23827,
+      "tokens": 278
+    }
+  ]
+}
