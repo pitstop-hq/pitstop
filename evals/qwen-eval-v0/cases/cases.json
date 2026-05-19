@@ -1,0 +1,152 @@
+[
+  {
+    "id": "case-001",
+    "receipt_id": "PT-2026-03-21-github-openclaw-venice-models-429-retry-after-unwired",
+    "difficulty": "easy",
+    "status": 429,
+    "headers": {"retry-after": "600"},
+    "finding": "Venice API returns Retry-After: 600 but client ignores it and retries on own schedule causing 10-minute timeout block. retryAfterMs supported but never passed by callers.",
+    "expected": "WAIT",
+    "reasoning": "Retry-After present. Long duration does not imply STOP. No body confirmation of quota exhaustion. Client should honor the header."
+  },
+  {
+    "id": "case-002",
+    "receipt_id": "PT-2026-02-25-github-issue-warden-groq-429-retry-after-ignored",
+    "difficulty": "easy",
+    "status": 429,
+    "headers": {"retry-after": "30"},
+    "finding": "Provider returns 429 with Retry-After: 30 but client ignores header and continues calling, wasting retries and thrashing fallback.",
+    "expected": "WAIT",
+    "reasoning": "Retry-After present and short. Clear WAIT case."
+  },
+  {
+    "id": "case-003",
+    "receipt_id": "PT-2026-03-21-github-continue-dev-429-cap-wait-missing",
+    "difficulty": "easy",
+    "status": 429,
+    "headers": {},
+    "finding": "429 response with no Retry-After header. Client treats all 429s as retryable without distinguishing CAP from WAIT. No concurrency reduction applied.",
+    "expected": "CAP",
+    "reasoning": "No Retry-After header. No quota exhaustion signal. Concurrency limit pattern."
+  },
+  {
+    "id": "case-004",
+    "receipt_id": "PT-2026-04-22-github-copilotkit-3637-retry-after-overridden",
+    "difficulty": "easy",
+    "status": 429,
+    "headers": {"retry-after": "45"},
+    "finding": "429 listed in retryableStatusCodes. Retry-After: 45 present but overridden by pure exponential backoff capped at maxDelayMs: 5000. All retries fire inside provider cooldown window.",
+    "expected": "WAIT",
+    "reasoning": "Retry-After present. Client should honor it as floor. Override is the bug."
+  },
+  {
+    "id": "case-005",
+    "receipt_id": "PT-2026-04-10-github-opencode-21960-retry-budget-boundary-missing",
+    "difficulty": "easy",
+    "status": 429,
+    "headers": {},
+    "finding": "Retryable errors enter a schedule with no maximum attempt count and no maximum total retry duration. Runtime stays in retry loop indefinitely. No Retry-After header present.",
+    "expected": "CAP",
+    "reasoning": "No Retry-After. No quota signal. Unbounded retry loop is a concurrency/throughput boundary failure."
+  },
+  {
+    "id": "case-006",
+    "receipt_id": "PT-2026-04-02-github-gsd-3430-billing-gate-message-only-stop",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {},
+    "finding": "Anthropic long-context billing gate returns HTTP 429 with no Retry-After header. Body message: 'Extra usage is required for long context requests.' No time-bound signal. Provider-wide credential backoff applied for 30 minutes.",
+    "expected": "STOP",
+    "reasoning": "No Retry-After. Body confirms billing gate — not transient throttle. Quota exhaustion confirmed by message content. STOP not WAIT or CAP."
+  },
+  {
+    "id": "case-007",
+    "receipt_id": "PT-2026-04-02-github-omp-607-stop-parent-child-propagation",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {},
+    "finding": "STOP condition classified correctly at child agent level but silently absorbed, never reaching parent session. Parent continues issuing requests unaware of terminal state. No Retry-After header.",
+    "expected": "STOP",
+    "reasoning": "No Retry-After. Propagation failure of a STOP signal. The correct classification at source was STOP."
+  },
+  {
+    "id": "case-008",
+    "receipt_id": "PT-2026-04-04-github-cline-10139-long-retry-after-misclassified-as-wait",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {"retry-after": "10800"},
+    "finding": "429 with Retry-After: 10800 (3 hours). Body confirms quota window exhaustion for the day. Client honors delay timing but still treats as retryable, wasting the retry budget after 3-hour wait.",
+    "expected": "STOP",
+    "reasoning": "Long Retry-After PLUS body confirming quota window exhaustion. This is the exception case: duration alone does not imply STOP but body confirmation does."
+  },
+  {
+    "id": "case-009",
+    "receipt_id": "PT-2026-03-25-github-openclaw-23317-timeout-misclassified-as-rate-limit",
+    "difficulty": "hard",
+    "status": 408,
+    "headers": {},
+    "finding": "HTTP 408 timeout misclassified as rate limit. Client applies rate limit retry policy to a timeout condition. No Retry-After header. Different error class entirely.",
+    "expected": "STOP",
+    "reasoning": "Non-429 status code. Not a rate limit. Do not retry with rate limit policy."
+  },
+  {
+    "id": "case-010",
+    "receipt_id": "PT-2026-04-13-github-nanobot-2760-stacked-retry-amplification",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {},
+    "finding": "Multiple agents each applying independent exponential backoff to 429 responses. No Retry-After header. Total concurrent retry pressure amplifies instead of reducing. Stacked amplification pattern.",
+    "expected": "CAP",
+    "reasoning": "No Retry-After. No quota signal. Stacked concurrency amplification is a CAP pattern. Reduce concurrent workers."
+  },
+  {
+    "id": "case-011",
+    "receipt_id": "PT-2026-03-31-github-openclaw-58442-quota-window-429-failover-gap",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {"retry-after": "3600"},
+    "finding": "Provider quota window exhausted. Retry-After: 3600 (1 hour). No failover to alternate provider configured. System stalls for full hour without attempting fallback.",
+    "expected": "STOP",
+    "reasoning": "Retry-After present but very long (1 hour) AND quota window exhaustion confirmed by context. Failover gap indicates STOP — surface to caller rather than wait."
+  },
+  {
+    "id": "case-012",
+    "receipt_id": "PT-2026-04-16-github-copilot-cli-2760-retry-after-timeout-conflict",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {"retry-after": "120"},
+    "finding": "Client HTTP timeout is 30 seconds. Retry-After: 120. Client honors delay but own timeout fires at 30s converting server-directed wait into immediate retry. Rapid retry loop follows.",
+    "expected": "WAIT",
+    "reasoning": "Retry-After present. The client timeout conflict is the bug not the classification. Correct action is WAIT — honor Retry-After as floor."
+  },
+  {
+    "id": "case-013",
+    "receipt_id": "PT-2026-04-17-github-feynman-110-hidden-runtime-retries",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {},
+    "finding": "Runtime layer intercepts 429 and retries silently before returning to caller. Caller never sees the 429. No Retry-After header. Hidden retry loop causes silent degradation.",
+    "expected": "CAP",
+    "reasoning": "No Retry-After. No quota signal. Hidden retry is a concurrency pattern. CAP — reduce concurrent pressure."
+  },
+  {
+    "id": "case-014",
+    "receipt_id": "PT-2026-04-19-github-claude-code-50830-headerless-429-hidden-enforcer",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {},
+    "finding": "Anthropic returns 429 with no Retry-After header. Internal enforcer applies rate limiting before headers are emitted. Caller sees headerless 429 with no guidance. Failover blocked.",
+    "expected": "CAP",
+    "reasoning": "No Retry-After. No quota body signal. Headerless 429 from provider concurrency enforcement. CAP pattern."
+  },
+  {
+    "id": "case-015",
+    "receipt_id": "PT-2026-04-23-github-kiro-7212-credit-limit-retried-as-throttle",
+    "difficulty": "hard",
+    "status": 429,
+    "headers": {},
+    "finding": "Credit limit exhausted. 429 returned with no Retry-After. Body message indicates credit exhaustion not throttling. Client retries as if transient throttle. All retries fail.",
+    "expected": "STOP",
+    "reasoning": "No Retry-After. Body confirms credit limit — permanent until topped up. STOP not CAP."
+  }
+]
