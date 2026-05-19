@@ -5,6 +5,8 @@ POST /classify        — returns WAIT/CAP/STOP with corpus-grounded precedent.
 GET  /health          — health check.
 GET  /corpus          — corpus status.
 GET  /exhaust/summary — operational intelligence from logged calls.
+POST /mcp             — HTTP MCP endpoint (Streamable HTTP transport)
+GET  /mcp             — MCP server info
 """
 
 import json
@@ -15,7 +17,8 @@ from email.utils import parsedate_to_datetime
 from pathlib import Path
 from typing import Optional
 
-from fastapi import FastAPI
+from fastapi import FastAPI, Request as FastAPIRequest
+from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 # Add parent to path for retrieval imports
@@ -77,7 +80,7 @@ class ClassifyRequest(BaseModel):
     status: int
     headers: dict = {}
     provider: Optional[str] = None
-    finding: Optional[str] = None  # free-text finding for corpus search
+    finding: Optional[str] = None
     context: Optional[dict] = None
 
 
@@ -89,7 +92,7 @@ class CorpusMatch(BaseModel):
 
 
 class Classification(BaseModel):
-    decision: str          # WAIT | CAP | STOP
+    decision: str
     confidence: float
     reason_code: str
     retry_after_ms: Optional[int] = None
@@ -108,10 +111,6 @@ class ClassifyResponse(BaseModel):
 # ---------------------------------------------------------------------------
 
 def log_exhaust(req: ClassifyRequest, response: ClassifyResponse) -> None:
-    """
-    Append every classify call to exhaust log.
-    Never breaks classification on logging failure.
-    """
     try:
         EXHAUST_PATH.parent.mkdir(parents=True, exist_ok=True)
         record = {
@@ -164,10 +163,6 @@ def parse_retry_after(value: Optional[str]) -> Optional[float]:
 # ---------------------------------------------------------------------------
 
 def query_corpus(finding: str, n: int = 3) -> list[CorpusMatch]:
-    """
-    Query ChromaDB for receipts matching the finding.
-    Returns empty list if ChromaDB unavailable.
-    """
     try:
         from retrieval.embed import pitstop_embed
         from retrieval.chroma import query_receipts
@@ -196,16 +191,10 @@ def query_corpus(finding: str, n: int = 3) -> list[CorpusMatch]:
 
 
 def build_finding_text(req: ClassifyRequest) -> str:
-    """
-    Build finding text for corpus search from the request.
-    Uses explicit finding field if provided, otherwise builds
-    from status + headers.
-    """
     if req.finding:
         return req.finding
 
     parts = [f"HTTP {req.status}"]
-
     ra = (
         req.headers.get("retry-after")
         or req.headers.get("Retry-After")
@@ -213,7 +202,6 @@ def build_finding_text(req: ClassifyRequest) -> str:
     )
     if ra:
         parts.append(f"Retry-After: {ra}")
-
     if req.provider:
         parts.append(f"provider: {req.provider}")
 
@@ -225,9 +213,6 @@ def build_finding_text(req: ClassifyRequest) -> str:
 # ---------------------------------------------------------------------------
 
 def classify_request(req: ClassifyRequest) -> tuple[str, float, str, Optional[int], str, str]:
-    """
-    Returns: (decision, confidence, reason_code, retry_after_ms, scope, fix_shape)
-    """
     ra_raw = (
         req.headers.get("retry-after")
         or req.headers.get("Retry-After")
@@ -265,6 +250,45 @@ def classify_request(req: ClassifyRequest) -> tuple[str, float, str, Optional[in
         "Reduce concurrent workers. Do not retry immediately. "
         "Add jitter before next attempt.",
     )
+
+
+# ---------------------------------------------------------------------------
+# MCP response formatter
+# ---------------------------------------------------------------------------
+
+def format_mcp_result(response: ClassifyResponse) -> str:
+    classification = response.classification
+    decision = classification.decision
+    confidence = classification.confidence
+    reason = classification.reason_code
+    retry_after_ms = classification.retry_after_ms
+    fix_shape = response.fix_shape
+    corpus_matches = response.corpus_matches
+    corpus_grounded = response.corpus_grounded
+
+    lines = [
+        f"Classification: {decision} (confidence: {confidence:.0%})",
+        f"Reason: {reason}",
+        f"Fix: {fix_shape}",
+    ]
+
+    if retry_after_ms:
+        lines.append(f"Retry after: {retry_after_ms}ms")
+
+    if corpus_grounded and corpus_matches:
+        lines.append(f"\nMatched precedent ({len(corpus_matches)} receipts):")
+        for match in corpus_matches[:3]:
+            lines.append(
+                f"  → {match.receipt_id}\n"
+                f"    {match.pattern[:120]}\n"
+                f"    Score: {match.score:.3f}"
+            )
+
+    lines.append(
+        f"\nGrounded: {'Yes — corpus-backed' if corpus_grounded else 'No — rule-based only'}"
+    )
+
+    return "\n".join(lines)
 
 
 # ---------------------------------------------------------------------------
@@ -334,9 +358,6 @@ def corpus_status():
 
 @app.get("/exhaust/summary")
 def exhaust_summary():
-    """
-    Summary of exhaust log — operational intelligence.
-    """
     if not EXHAUST_PATH.exists():
         return {"total_calls": 0, "decisions": {}, "providers": {}}
 
@@ -377,4 +398,103 @@ def exhaust_summary():
         ) if records else 0,
         "ungrounded_calls": ungrounded,
         "potential_novel_patterns": novel_patterns[:5],
+    }
+
+
+# ---------------------------------------------------------------------------
+# HTTP MCP endpoint — Streamable HTTP transport for Smithery
+# Calls classification logic directly — no httpx round-trip, no timeout risk
+# ---------------------------------------------------------------------------
+
+@app.post("/mcp")
+async def mcp_endpoint(request: FastAPIRequest):
+    try:
+        body = await request.json()
+    except Exception:
+        return JSONResponse(
+            status_code=400,
+            content={"jsonrpc": "2.0", "error": {"code": -32700, "message": "Parse error"}, "id": None}
+        )
+
+    method = body.get("method")
+    request_id = body.get("id")
+
+    if method == "initialize":
+        return JSONResponse(content={
+            "jsonrpc": "2.0", "id": request_id,
+            "result": {
+                "protocolVersion": "2024-11-05",
+                "capabilities": {"tools": {}},
+                "serverInfo": {"name": "pitstop", "version": "0.2.0"},
+            }
+        })
+
+    if method == "tools/list":
+        from mcp.server import TOOL_DEFINITION
+        return JSONResponse(content={
+            "jsonrpc": "2.0", "id": request_id,
+            "result": {"tools": [TOOL_DEFINITION]}
+        })
+
+    if method == "tools/call":
+        params = body.get("params", {})
+        arguments = params.get("arguments", {})
+
+        finding = arguments.get("finding", "")
+        status = arguments.get("status", 429)
+        retry_after = arguments.get("retry_after")
+        provider = arguments.get("provider")
+
+        headers = {}
+        if retry_after:
+            headers["retry-after"] = retry_after
+
+        req = ClassifyRequest(
+            status=status,
+            headers=headers,
+            finding=finding,
+            provider=provider,
+        )
+
+        decision, confidence, reason_code, retry_after_ms, scope, fix_shape = classify_request(req)
+        finding_text = build_finding_text(req)
+        corpus_matches = query_corpus(finding_text, n=3)
+
+        response = ClassifyResponse(
+            classification=Classification(
+                decision=decision,
+                confidence=confidence,
+                reason_code=reason_code,
+                retry_after_ms=retry_after_ms,
+                scope=scope,
+            ),
+            fix_shape=fix_shape,
+            corpus_matches=corpus_matches,
+            corpus_grounded=len(corpus_matches) > 0,
+        )
+
+        log_exhaust(req, response)
+        formatted = format_mcp_result(response)
+
+        return JSONResponse(content={
+            "jsonrpc": "2.0", "id": request_id,
+            "result": {"content": [{"type": "text", "text": formatted}], "isError": False}
+        })
+
+    if method == "notifications/initialized":
+        return JSONResponse(status_code=204, content={})
+
+    return JSONResponse(content={
+        "jsonrpc": "2.0", "id": request_id,
+        "error": {"code": -32601, "message": f"Method not found: {method}"}
+    })
+
+
+@app.get("/mcp")
+async def mcp_info():
+    return {
+        "name": "pitstop",
+        "version": "0.2.0",
+        "description": "Classify AI/API execution failures. Returns WAIT, CAP, or STOP with corpus-grounded precedent from 63 confirmed production failures.",
+        "tools": ["pitstop_classify"],
     }

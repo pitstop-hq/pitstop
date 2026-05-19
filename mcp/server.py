@@ -103,7 +103,7 @@ def call_classify(
         response = httpx.post(
             f"{PITSTOP_BASE_URL}/classify",
             json=payload,
-            timeout=10.0,
+            timeout=60.0,
         )
         response.raise_for_status()
         return response.json()
