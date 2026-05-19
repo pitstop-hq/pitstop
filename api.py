@@ -498,3 +498,33 @@ async def mcp_info():
         "description": "Classify AI/API execution failures. Returns WAIT, CAP, or STOP with corpus-grounded precedent from 63 confirmed production failures.",
         "tools": ["pitstop_classify"],
     }
+
+@app.get("/.well-known/mcp/server-card.json")
+async def server_card():
+    """
+    Static server card for Smithery scanning.
+    Bypasses automatic MCP initialization scan.
+    """
+    return {
+        "name": "pitstop",
+        "version": "0.2.0",
+        "description": "Classify AI/API execution failures. Returns WAIT, CAP, or STOP with corpus-grounded precedent from 63 confirmed production failures. Call this when your agent hits a 429, quota error, or rate limit boundary.",
+        "tools": [
+            {
+                "name": "pitstop_classify",
+                "description": "Classify an AI/API execution failure. Returns WAIT, CAP, or STOP with fix shape and matched precedent from confirmed production failures.",
+                "inputSchema": {
+                    "type": "object",
+                    "properties": {
+                        "finding": {"type": "string"},
+                        "status": {"type": "integer"},
+                        "retry_after": {"type": "string"},
+                        "provider": {"type": "string"}
+                    },
+                    "required": ["finding"]
+                }
+            }
+        ],
+        "homepage": "https://pitstop.dev",
+        "repository": "https://github.com/pitstop-hq/pitstop"
+    }
