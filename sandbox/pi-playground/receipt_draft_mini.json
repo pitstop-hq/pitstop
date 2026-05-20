@@ -1,0 +1,32 @@
+{
+  "schema_version": "receipt.v0",
+  "id": "PT-2026-05-20-draft-genkit-5270-retry-after-ignored",
+  "created_at": "2026-05-20T00:00:00Z",
+  "source": {
+    "url": "https://github.com/firebase/genkit/issues/5270",
+    "kind": "github_issue",
+    "repo": "firebase/genkit",
+    "issue_or_pr": 5270
+  },
+  "hazard": {
+    "class": ["rate_limit_429"],
+    "summary": "The retry middleware ignores the Retry-After header on HTTP 429 responses leading to retries firing at fixed intervals inside the provider's enforced cooldown window.",
+    "signals": [
+      "DEFAULT_RETRY_STATUSES includes RESOURCE_EXHAUSTED",
+      "No Retry-After header consulted in retry delay computation",
+      "Providers (Anthropic, OpenAI, Gemini) send Retry-After headers on 429 responses"
+    ]
+  },
+  "constraints": [
+    "Must respect the Retry-After header to avoid premature retry attempts",
+    "Avoid retrying during the cooldown period enforced by the server"
+  ],
+  "knobs": [
+    "Implement logic to parse and honor the Retry-After header",
+    "Adjust retry middleware delay to align with server-specified Retry-After duration"
+  ],
+  "verification": [
+    "Observe retry timings to ensure they do not occur before the Retry-After duration expires",
+    "Verify no retries occur within cooldown window on HTTP 429 responses with Retry-After header"
+  ]
+}

@@ -1,0 +1,39 @@
+{
+  "schema_version": "receipt.v0",
+  "id": "PT-YYYY-MM-DD-draft-genkit-5270-retry-after-ignored",
+  "created_at": "2026-05-20T00:00:00Z",
+  "source": {
+    "url": "https://github.com/firebase/genkit/issues/5270",
+    "kind": "github_issue",
+    "repo": "firebase/genkit",
+    "issue_or_pr": 5270
+  },
+  "hazard": {
+    "class": ["rate_limit_429"],
+    "summary": "Genkit retries RESOURCE_EXHAUSTED / HTTP 429 responses with fixed exponential timing and does not honor provider Retry-After headers, causing repeated requests inside the server-imposed cooldown window.",
+    "signals": [
+      "DEFAULT_RETRY_STATUSES includes RESOURCE_EXHAUSTED.",
+      "Retry delay computation does not consult the provider's Retry-After header.",
+      "A provider can return HTTP 429 with Retry-After: 60.",
+      "Observed behavior: the middleware retries at roughly 1000ms intervals during that 60-second cooldown.",
+      "Anthropic returns retry-after on 429 responses.",
+      "OpenAI and Gemini also send Retry-After."
+    ]
+  },
+  "constraints": [
+    "When a provider supplies Retry-After on a 429 / RESOURCE_EXHAUSTED response, the client should not retry before that cooldown expires.",
+    "The issue applies across providers that emit Retry-After, not just a single backend.",
+    "Pure exponential backoff is insufficient when explicit server pacing information is available."
+  ],
+  "knobs": [
+    "Retry status set includes RESOURCE_EXHAUSTED by default.",
+    "Retry delay/backoff computation is the relevant control point.",
+    "Honor Retry-After header when present; otherwise fall back to normal exponential backoff."
+  ],
+  "verification": [
+    "Trigger a 429 response that includes Retry-After: 60 and confirm the next retry is scheduled no earlier than 60 seconds later.",
+    "Verify the client does not emit repeated retry attempts at ~1 second intervals during the Retry-After window.",
+    "Repeat against providers known to send Retry-After headers, including Anthropic, OpenAI, and Gemini.",
+    "Confirm fallback behavior still uses exponential backoff when Retry-After is absent."
+  ]
+}
